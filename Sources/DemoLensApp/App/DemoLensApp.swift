@@ -11,6 +11,15 @@ struct DemoLensApp: App {
     }
 
     var body: some Scene {
+        WindowGroup("DemoLens") {
+            MainWindowView()
+                .environmentObject(appState)
+                .frame(minWidth: 560, idealWidth: 640, minHeight: 520, idealHeight: 620)
+                .task {
+                    await appState.refreshPermissions()
+                }
+        }
+
         MenuBarExtra {
             MenuBarView()
                 .environmentObject(appState)
@@ -27,6 +36,22 @@ struct DemoLensApp: App {
                 .task {
                     await appState.refreshPermissions()
                 }
+        }
+    }
+}
+
+private struct MainWindowView: View {
+    @EnvironmentObject private var appState: AppState
+    @State private var didDismissPermissions = false
+
+    var body: some View {
+        if appState.permissionViewModel.canRecord || didDismissPermissions {
+            SettingsView()
+                .environmentObject(appState)
+        } else {
+            PermissionsView(viewModel: appState.permissionViewModel) {
+                didDismissPermissions = true
+            }
         }
     }
 }
